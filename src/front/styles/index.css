@@ -1,0 +1,124 @@
+@font-face {
+
+  font-family: 'Tienne';
+  src: url('../assets/fonts/Tienne.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+
+  font-family: 'IBM Plex Sans';
+  src: url('../assets/fonts/IBMPlexSans.woff2') format('woff2');
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+:root {
+
+
+
+  /* COLOR SCHEME */
+  --color-bg:  #FFFFFA;
+
+
+  --color-primary: #DABC8E; 
+  --color-secondary: #7B6750;
+  
+  --text-primary: #070300;
+  --text-bg: #DABC8E; 
+
+  --color-border: #564838;
+
+  --shadow:
+    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+
+
+
+  /*  TYPOGRAPHY */
+  --heading: 'Tienne', serif;
+  --body: 'IBM Plex Sans', sans-serif;
+  
+
+
+  font: 18px/145% var(--sans);
+  letter-spacing: 0.18px;
+  color-scheme: light dark;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  @media (max-width: 1024px) {
+    font-size: 16px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  overflow-x: hidden;
+  background: var(--color-bg);
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 400;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 60px;
+  letter-spacing: 1.90px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+.btn {
+  display: inline-block;
+  padding: 12px 18px;
+
+  font-family: var(--heading);
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+
+  color: var(--color-bg);
+  background-color: var(--color-secondary);
+  border-radius: 4px;
+  transition: background-color 0.3s ease;
+}
+
