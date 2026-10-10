@@ -1,0 +1,96 @@
+.file-upload {
+  padding: 64px 32px;
+  background: var(--color-bg);
+  color: var(--text-primary);
+}
+
+.file-upload-content {
+  width: min(100%, 720px);
+  margin: 0 auto;
+  text-align: center;
+}
+
+.file-upload-heading {
+
+
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.file-upload-logo {
+  width: 84px;
+  height: 84px;
+  object-fit: contain;
+}
+
+.file-upload-heading h2 {
+  margin: 0;
+}
+
+
+
+.file-upload-dropzone {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 32px;
+  border: 2px dashed var(--color-border);
+  border-radius: 8px;
+  font-family: var(--body);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.file-upload-dropzone.is-dragging {
+  border-color: var(--color-secondary);
+  background-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
+.file-upload-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+
+.file-upload-submit {
+  border: 0;
+  border-radius: 4px;
+  padding: 12px 20px;
+  font-family: var(--heading);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+
+.file-upload-text {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: 1.7rem;
+  cursor: pointer;
+  color: var(--color-secondary);
+
+}
+
+.file-upload-selected,
+.file-upload-error {
+  margin-top: 16px;
+  font-family: var(--body);
+}
+
+.file-upload-error {
+  color: #a33a2b;
+}
+
+.file-upload-submit {
+  margin-top: 24px;
+  color: var(--color-bg);
+  background: var(--color-secondary);
+}
+
+.file-upload-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
