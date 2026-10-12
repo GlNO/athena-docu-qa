@@ -10,6 +10,8 @@
 	color: var(--text-primary);
 	background: var(--color-bg);
 	border-top: 1px solid rgba(86, 72, 56, 0.22);
+	border-bottom: 1px solid rgba(86, 72, 56, 0.22);
+
 }
 
 .about-section::before {

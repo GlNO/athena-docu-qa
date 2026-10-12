@@ -35,7 +35,7 @@ export default function Navbar(){
                         </button>
 
                         <div className={`navbar-links${isMenuOpen ? ' is-open' : ''}`} id="navbar-links">
-                              <a href="#home" onClick={closeMenu}>Workspace</a>
+                              <a href="#upload-pdf" onClick={closeMenu}>Workspace</a>
                               {/* <a href="#about" onClick={closeMenu}>Upload PDF</a> */}
                               <a href="#about" onClick={closeMenu}>About</a>
                               <a href="https://github.com/GlNO/athena-docu-qa" target="_blank" rel="noopener noreferrer" onClick={closeMenu}>GitHub</a>
