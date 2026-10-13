@@ -1,6 +1,11 @@
 import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import './FileUpload.css';
-
+import {
+  searchDocument,
+  uploadDocument,
+  type SearchResponse,
+  type UploadResponse,
+} from '../../api';
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
@@ -9,6 +14,13 @@ export default function FileUpload() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [document, setDocument] = useState<UploadResponse | null>(null);
+  const [question, setQuestion] = useState('');
+  const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(
+    null,
+  );
+  const [isSearching, setIsSearching] = useState(false);
 
   const selectFile = (file: File | undefined) => {
     setError('');
@@ -30,6 +42,8 @@ export default function FileUpload() {
     }
 
     setSelectedFile(file);
+    setDocument(null);
+    setSearchResponse(null);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -40,6 +54,48 @@ export default function FileUpload() {
     event.preventDefault();
     setIsDragging(false);
     selectFile(event.dataTransfer.files[0]);
+  };
+
+  const handleUpload = async () => {
+    if (!selectedFile) {
+      return;
+    }
+
+    setError('');
+    setIsUploading(true);
+
+    try {
+      setDocument(await uploadDocument(selectedFile));
+    } catch (uploadError) {
+      setError(
+        uploadError instanceof Error
+          ? uploadError.message
+          : 'The PDF could not be uploaded.',
+      );
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleSearch = async () => {
+    if (!document || !question.trim()) {
+      return;
+    }
+
+    setError('');
+    setIsSearching(true);
+
+    try {
+      setSearchResponse(await searchDocument(document.document_id, question.trim()));
+    } catch (searchError) {
+      setError(
+        searchError instanceof Error
+          ? searchError.message
+          : 'The question could not be answered.',
+      );
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   return (
@@ -90,9 +146,14 @@ export default function FileUpload() {
         )}
 
 
-          <button className="file-upload-submit" type="button" disabled={!selectedFile}>
-          Upload PDF
-        </button>
+          <button
+            className="file-upload-submit"
+            type="button"
+            disabled={!selectedFile || isUploading}
+            onClick={handleUpload}
+          >
+            {isUploading ? 'Uploading...' : 'Upload PDF'}
+          </button>
 
         
         </div>
@@ -102,6 +163,50 @@ export default function FileUpload() {
           <p className="file-upload-error" role="alert">
             {error}
           </p>
+        )}
+
+        {document && (
+          <div className="file-upload-question">
+            <p className="file-upload-success" role="status">
+              {document.message}
+            </p>
+            <label htmlFor="document-question">Ask a question about your PDF</label>
+            <textarea
+              id="document-question"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="What would you like to know?"
+              rows={3}
+              maxLength={2000}
+            />
+            <button
+              className="file-upload-submit"
+              type="button"
+              disabled={!question.trim() || isSearching}
+              onClick={handleSearch}
+            >
+              {isSearching ? 'Searching...' : 'Ask question'}
+            </button>
+          </div>
+        )}
+
+        {searchResponse && (
+          <div className="file-upload-results" aria-live="polite">
+            <h3>
+              {searchResponse.result_count
+                ? 'Relevant passages'
+                : 'No relevant passages found'}
+            </h3>
+            {searchResponse.results.map((result) => (
+              <article
+                className="file-upload-result"
+                key={`${result.page_number}-${result.chunk_index}`}
+              >
+                <p>{result.text}</p>
+                <small>Page {result.page_number}</small>
+              </article>
+            ))}
+          </div>
         )}
 
       
