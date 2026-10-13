@@ -1,5 +1,14 @@
-import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type DragEvent,
+} from 'react';
 import './FileUpload.css';
+import addIcon from '../../assets/images/add.png';
+import clipIcon from '../../assets/images/clip.png';
+import owlIcon from '../../assets/images/owl_icon_.png';
 import {
   searchDocument,
   uploadDocument,
@@ -11,16 +20,27 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 
 export default function FileUpload() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const conversationRef = useRef<HTMLDivElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [document, setDocument] = useState<UploadResponse | null>(null);
   const [question, setQuestion] = useState('');
+  const [askedQuestion, setAskedQuestion] = useState('');
   const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(
     null,
   );
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (searchResponse || isSearching) {
+      conversationRef.current?.scrollTo({
+        top: conversationRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
+  }, [isSearching, searchResponse]);
 
   const selectFile = (file: File | undefined) => {
     setError('');
@@ -43,6 +63,8 @@ export default function FileUpload() {
 
     setSelectedFile(file);
     setDocument(null);
+    setQuestion('');
+    setAskedQuestion('');
     setSearchResponse(null);
   };
 
@@ -84,10 +106,15 @@ export default function FileUpload() {
 
     setError('');
     setIsSearching(true);
+    const submittedQuestion = question.trim();
+    setAskedQuestion(submittedQuestion);
 
     try {
-      setSearchResponse(await searchDocument(document.document_id, question.trim()));
+      const response = await searchDocument(document.document_id, submittedQuestion);
+      setSearchResponse(response);
+      setQuestion('');
     } catch (searchError) {
+      setAskedQuestion('');
       setError(
         searchError instanceof Error
           ? searchError.message
@@ -99,15 +126,14 @@ export default function FileUpload() {
   };
 
   return (
-    <section className="file-upload" id="upload-pdf" aria-labelledby="file-upload-title">
-      <div className="file-upload-content">
-        <div className="file-upload-heading">
-    
-          <h2 id="file-upload-title">Choose a document to start asking questions.</h2>
-        </div>
-     
-        <div      
-          className={`file-upload-dropzone${isDragging ? ' is-dragging' : ''}`}
+  <section className="file-upload" id="upload-pdf" aria-labelledby="file-upload-title">
+    <div className="file-upload-content">
+      <div className="file-upload-eyebrow" aria-label="Athena, knowledge within reach">
+        <strong>Athena</strong>
+        <span>Knowledge, within reach.</span>
+      </div>
+      <div
+        className={`file-upload-dropzone${isDragging ? ' is-dragging' : ''}`}
           onDragEnter={(event) => {
             event.preventDefault();
             setIsDragging(true);
@@ -120,6 +146,77 @@ export default function FileUpload() {
           }}
           onDrop={handleDrop}
         >
+          {!document && !isUploading && (
+            <div className="file-upload-prompt">
+              <img src={owlIcon} alt="" className="file-upload-logo" />
+              <h2 id="file-upload-title">What would you like to know?</h2>
+              <p>Attach a PDF to get the conversation started.</p>
+            </div>
+          )}
+
+          {isUploading && (
+            <div className="file-upload-typing file-upload-uploading" role="status">
+              <img src={owlIcon} alt="" className="file-upload-typing-logo" />
+              <span>Reading your document</span>
+              <span
+                className="file-upload-typing-dots"
+                aria-label="Athena is reading your document"
+              >
+                <span />
+                <span />
+                <span />
+              </span>
+            </div>
+          )}
+
+          {document && (
+            <div
+              ref={conversationRef}
+              className="file-upload-conversation"
+              aria-live="polite"
+            >
+              <p className="file-upload-success" role="status">
+                {document.message}
+              </p>
+              {askedQuestion && (
+                <div className="file-upload-message file-upload-message-user">
+                  <span className="file-upload-message-label">You</span>
+                  <p>{askedQuestion}</p>
+                </div>
+              )}
+              {isSearching && (
+                <div className="file-upload-typing" role="status">
+                  <img src={owlIcon} alt="" className="file-upload-typing-logo" />
+                  <span>Thinking through your document</span>
+                  <span className="file-upload-typing-dots" aria-label="Athena is thinking">
+                    <span />
+                    <span />
+                    <span />
+                  </span>
+                </div>
+              )}
+              {searchResponse && (
+                <div className="file-upload-message file-upload-message-assistant">
+                  <span className="file-upload-message-label">Athena</span>
+                  <h3>
+                    {searchResponse.result_count
+                      ? 'Relevant passages'
+                      : 'No relevant passages found'}
+                  </h3>
+                  {searchResponse.results.map((result) => (
+                    <article
+                      className="file-upload-result"
+                      key={`${result.page_number}-${result.chunk_index}`}
+                    >
+                      <p>{result.text}</p>
+                      <small>Page {result.page_number}</small>
+                    </article>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <input
             ref={inputRef}
             className="file-upload-input"
@@ -127,35 +224,73 @@ export default function FileUpload() {
             accept="application/pdf,.pdf"
             onChange={handleFileChange}
           />
-          <h2
-            className="file-upload-text"
-        
-            onClick={() => inputRef.current?.click()}
-          >
+          <div className="file-upload-composer">
+            <div className="file-upload-attachment-row">
+              <button
+                className="file-upload-attach"
+                type="button"
+                onClick={() => inputRef.current?.click()}
+              >
+                <img src={clipIcon} alt="" />
+                <span>{selectedFile?.name ?? 'Attach a PDF'}</span>
+              </button>
+              <button
+                className="file-upload-add"
+                type="button"
+                aria-label="Choose a PDF file"
+                onClick={() => inputRef.current?.click()}
+              >
+                <img src={addIcon} alt="" />
+              </button>
+            </div>
 
+            <div className="file-upload-divider" />
 
-            Drop your PDF here
-          </h2>
-          <span>or browse files from your device.</span>
+            <textarea
+              className="file-upload-question-input"
+              aria-label="Ask Athena a question"
+              value={question}
+              onChange={(event) => setQuestion(event.target.value)}
+              placeholder="Ask Athena a question..."
+              rows={1}
+              maxLength={2000}
+              disabled={!document}
+            />
 
-            
-        {selectedFile && (
-          <p className="file-upload-selected" role="status">
-            <strong>{selectedFile.name}</strong>
-          </p>
-        )}
+            {selectedFile && !document && (
+              <button
+                className="file-upload-submit"
+                type="button"
+                disabled={isUploading}
+                onClick={handleUpload}
+              >
+                {isUploading ? (
+                  <>
+                    Uploading <span className="file-upload-spinner" aria-hidden="true" />
+                  </>
+                ) : (
+                  'Upload PDF'
+                )}
+              </button>
+            )}
 
-
-          <button
-            className="file-upload-submit"
-            type="button"
-            disabled={!selectedFile || isUploading}
-            onClick={handleUpload}
-          >
-            {isUploading ? 'Uploading...' : 'Upload PDF'}
-          </button>
-
-        
+            {document && (
+              <button
+                className="file-upload-submit"
+                type="button"
+                disabled={!question.trim() || isSearching}
+                onClick={handleSearch}
+              >
+                {isSearching ? (
+                  <>
+                    Searching <span className="file-upload-spinner" aria-hidden="true" />
+                  </>
+                ) : (
+                  'Ask question'
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
 
@@ -165,51 +300,6 @@ export default function FileUpload() {
           </p>
         )}
 
-        {document && (
-          <div className="file-upload-question">
-            <p className="file-upload-success" role="status">
-              {document.message}
-            </p>
-            <label htmlFor="document-question">Ask a question about your PDF</label>
-            <textarea
-              id="document-question"
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-              placeholder="What would you like to know?"
-              rows={3}
-              maxLength={2000}
-            />
-            <button
-              className="file-upload-submit"
-              type="button"
-              disabled={!question.trim() || isSearching}
-              onClick={handleSearch}
-            >
-              {isSearching ? 'Searching...' : 'Ask question'}
-            </button>
-          </div>
-        )}
-
-        {searchResponse && (
-          <div className="file-upload-results" aria-live="polite">
-            <h3>
-              {searchResponse.result_count
-                ? 'Relevant passages'
-                : 'No relevant passages found'}
-            </h3>
-            {searchResponse.results.map((result) => (
-              <article
-                className="file-upload-result"
-                key={`${result.page_number}-${result.chunk_index}`}
-              >
-                <p>{result.text}</p>
-                <small>Page {result.page_number}</small>
-              </article>
-            ))}
-          </div>
-        )}
-
-      
       </div>
     </section>
   );

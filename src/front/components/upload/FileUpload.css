@@ -1,48 +1,221 @@
 .file-upload {
-  padding: 64px 32px;
+  padding: 72px 32px;
   background: var(--color-bg);
   color: var(--text-primary);
 }
 
 .file-upload-content {
-  width: min(100%, 720px);
+  width: min(100%, 1126px);
   margin: 0 auto;
-  text-align: center;
 }
 
-.file-upload-heading {
-
-
-  margin-bottom: 20px;
+.file-upload-eyebrow {
+  display: grid;
+  gap: 2px;
+  margin: 0 0 12px 8px;
+  color: var(--text-primary);
+  font-family: var(--heading);
   text-align: left;
 }
 
-.file-upload-logo {
-  width: 84px;
-  height: 84px;
-  object-fit: contain;
+.file-upload-eyebrow strong {
+  font-size: 2rem;
+  line-height: 1.1;
 }
 
-.file-upload-heading h2 {
+.file-upload-eyebrow span {
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.2;
+  color: var(--color-secondary);
+}
+
+.file-upload-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  min-height: 620px;
+  padding: 32px clamp(24px, 6vw, 84px) 28px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 75%, transparent);
+  border-radius: 14px;
+  background: var(--color-bg);
+
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.file-upload-conversation {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  width: min(100%, 960px);
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 16px 8px 0;
+  overflow-y: auto;
+  font-family: var(--body);
+  scrollbar-color: color-mix(in srgb, var(--color-secondary) 45%, transparent)
+    transparent;
+}
+
+.file-upload-conversation > .file-upload-success {
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.file-upload-message {
+  display: grid;
+  gap: 7px;
+  width: fit-content;
+  max-width: min(82%, 760px);
+  padding: 13px 16px;
+  border-radius: 14px;
+}
+
+.file-upload-message-label {
+  color: var(--color-secondary);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.file-upload-message p,
+.file-upload-message h3 {
   margin: 0;
 }
 
+.file-upload-message-user {
+  justify-self: end;
+  color: var(--color-bg);
+  background: var(--color-secondary);
+  border-bottom-right-radius: 4px;
+}
 
+.file-upload-message-user .file-upload-message-label {
+  color: color-mix(in srgb, var(--color-bg) 78%, transparent);
+}
 
-.file-upload-dropzone {
-  display: grid;
-  justify-items: center;
-  gap: 8px;
-  padding: 32px;
-  border: 2px dashed var(--color-border);
-  border-radius: 8px;
+.file-upload-message-assistant {
+  justify-self: start;
+  color: var(--text-primary);
+  background: transparent;
+  border-left: 2px solid var(--color-primary);
+  border-radius: 0;
+  padding-left: 18px;
+}
+
+.file-upload-message-assistant h3 {
   font-family: var(--body);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.file-upload-message-assistant .file-upload-result {
+  margin-top: 2px;
+  padding: 0;
+  border: 0;
+}
+
+.file-upload-message-assistant .file-upload-result + .file-upload-result {
+  margin-top: 10px;
+}
+
+.file-upload-message-assistant .file-upload-result p {
+  white-space: pre-wrap;
+}
+
+.file-upload-typing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 180px;
+  color: var(--color-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.file-upload-uploading {
+  flex: 1 1 auto;
+}
+
+.file-upload-typing-logo {
+  width: 34px;
+  height: 47px;
+  object-fit: contain;
+  opacity: 0.8;
+  animation: file-upload-typing-glow 1.8s ease-in-out infinite;
+}
+
+.file-upload-typing-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 18px;
+}
+
+.file-upload-typing-dots span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-secondary);
+  animation: file-upload-typing-bounce 1.2s infinite ease-in-out;
+}
+
+.file-upload-typing-dots span {
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-primary) 35%, transparent);
+}
+
+.file-upload-typing-dots span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.file-upload-typing-dots span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes file-upload-typing-bounce {
+  0%,
+  60%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes file-upload-typing-glow {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateY(0) scale(0.96);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .file-upload-typing-logo,
+  .file-upload-typing-dots span,
+  .file-upload-spinner {
+    animation: none;
+  }
 }
 
 .file-upload-dropzone.is-dragging {
   border-color: var(--color-secondary);
-  background-color: color-mix(in srgb, var(--color-primary) 25%, transparent);
+  background-color: color-mix(in srgb, var(--color-primary) 15%, var(--color-bg));
 }
 
 .file-upload-input {
@@ -54,83 +227,185 @@
   white-space: nowrap;
 }
 
+.file-upload-prompt {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  margin: auto;
+  text-align: center;
+}
+
+.file-upload-logo {
+  width: 48px;
+  height: 66px;
+  margin-bottom: 5px;
+  object-fit: contain;
+}
+
+.file-upload-prompt h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-family: var(--heading);
+  font-size: clamp(1.45rem, 3vw, 2rem);
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.file-upload-prompt p {
+  color: var(--color-secondary);
+  font-family: var(--body);
+  font-size: 1.05rem;
+
+}
+
+.file-upload-composer {
+  flex: 0 0 auto;
+  width: min(100%, 960px);
+  padding: 12px 24px 16px;
+  border: 1px solid color-mix(in srgb, var(--color-border) 50%, transparent);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-primary) 8%, var(--color-bg));
+}
+
+.file-upload-attachment-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.file-upload-attach,
+.file-upload-add {
+  display: inline-flex;
+  align-items: center;
+  border: 0;
+  color: var(--color-secondary);
+  background: transparent;
+  cursor: pointer;
+  font: 1.1rem var(--body);
+}
+
+.file-upload-attach {
+  min-width: 0;
+  gap: 12px;
+  padding: 0;
+  text-align: left;
+}
+
+.file-upload-attach span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-upload-attach img {
+  width: 22px;
+  height: 22px;
+}
+
+.file-upload-add {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+}
+
+.file-upload-add img {
+  width: 28px;
+  height: 28px;
+}
+
+.file-upload-attach:hover,
+.file-upload-add:hover {
+  color: var(--text-primary);
+}
+
+.file-upload-attach:focus-visible,
+.file-upload-add:focus-visible,
+.file-upload-submit:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 3px;
+}
+
+.file-upload-divider {
+  height: 1px;
+  margin: 12px 0 8px;
+  background: color-mix(in srgb, var(--color-border) 75%, transparent);
+}
+
+.file-upload-question-input {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  padding: 0;
+  resize: vertical;
+  border: 0;
+  color: var(--text-primary);
+  background: transparent;
+  font: 1rem var(--body);
+}
+
+.file-upload-question-input::placeholder {
+  color: var(--color-secondary);
+  opacity: 1;
+}
+
+.file-upload-question-input:focus {
+  outline: none;
+}
+
+.file-upload-question-input:disabled {
+  cursor: not-allowed;
+}
 
 .file-upload-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 0 0 auto;
   border: 0;
   border-radius: 4px;
-  padding: 12px 20px;
-  font-family: var(--heading);
-  font-weight: 700;
+  padding: 9px 16px;
+  color: var(--color-bg);
+  background: var(--color-secondary);
   cursor: pointer;
+  font: 700 0.9rem var(--heading);
 }
 
-
-.file-upload-text {
-  font-family: var(--body);
-  font-weight: 800;
-  font-size: 1.7rem;
-  cursor: pointer;
-  color: var(--color-secondary);
-
+.file-upload-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid color-mix(in srgb, var(--color-bg) 45%, transparent);
+  border-top-color: var(--color-bg);
+  border-radius: 50%;
+  animation: file-upload-spin 0.75s linear infinite;
 }
 
-.file-upload-selected,
+@keyframes file-upload-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.file-upload-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .file-upload-error {
-  margin-top: 16px;
+  width: min(100%, 960px);
+  margin: 20px auto 0;
   font-family: var(--body);
 }
 
 .file-upload-error {
   color: #a33a2b;
+  text-align: center;
 }
 
 .file-upload-success {
   color: #356b47;
-}
-
-.file-upload-question,
-.file-upload-results {
-  display: grid;
-  gap: 12px;
-  margin-top: 28px;
-  text-align: left;
-}
-
-.file-upload-question label {
-  font-family: var(--body);
-  font-weight: 700;
-}
-
-.file-upload-question textarea {
-  width: 100%;
-  resize: vertical;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
-  padding: 12px;
-  color: var(--text-primary);
-  background: var(--color-bg);
-  font: inherit;
-}
-
-.file-upload-question .file-upload-submit {
-  justify-self: start;
-  margin-top: 0;
-}
-
-.file-upload-results h3 {
-  margin: 0;
-  font-family: var(--heading);
-  font-weight: 400;
-}
-
-.file-upload-result {
-  padding: 16px;
-  border-left: 3px solid var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 15%, transparent);
-}
-
-.file-upload-result p {
-  white-space: pre-wrap;
 }
 
 .file-upload-result small {
@@ -139,13 +414,22 @@
   color: var(--color-secondary);
 }
 
-.file-upload-submit {
-  margin-top: 24px;
-  color: var(--color-bg);
-  background: var(--color-secondary);
-}
+@media (max-width: 700px) {
+  .file-upload {
+    padding: 48px 16px;
+  }
 
-.file-upload-submit:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
+  .file-upload-dropzone {
+    gap: 32px;
+    min-height: 520px;
+    padding: 20px 16px;
+  }
+
+  .file-upload-composer {
+    padding-inline: 16px;
+  }
+
+  .file-upload-message {
+    max-width: 92%;
+  }
 }
