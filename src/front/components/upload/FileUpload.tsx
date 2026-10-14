@@ -10,9 +10,9 @@ import addIcon from '../../assets/images/add.png';
 import clipIcon from '../../assets/images/clip.png';
 import owlIcon from '../../assets/images/owl_icon_.png';
 import {
-  searchDocument,
+  chatDocument,
   uploadDocument,
-  type SearchResponse,
+  type ChatResponse,
   type UploadResponse,
 } from '../../api';
 
@@ -28,19 +28,19 @@ export default function FileUpload() {
   const [document, setDocument] = useState<UploadResponse | null>(null);
   const [question, setQuestion] = useState('');
   const [askedQuestion, setAskedQuestion] = useState('');
-  const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(
+  const [chatResponse, setChatResponse] = useState<ChatResponse | null>(
     null,
   );
-  const [isSearching, setIsSearching] = useState(false);
+  const [isChatting, setIsChatting] = useState(false);
 
   useEffect(() => {
-    if (searchResponse || isSearching) {
+    if (chatResponse || isChatting) {
       conversationRef.current?.scrollTo({
         top: conversationRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
-  }, [isSearching, searchResponse]);
+  }, [isChatting, chatResponse]);
 
   const selectFile = (file: File | undefined) => {
     setError('');
@@ -65,7 +65,7 @@ export default function FileUpload() {
     setDocument(null);
     setQuestion('');
     setAskedQuestion('');
-    setSearchResponse(null);
+    setChatResponse(null);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -99,29 +99,29 @@ export default function FileUpload() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleChat = async () => {
     if (!document || !question.trim()) {
       return;
     }
 
     setError('');
-    setIsSearching(true);
+    setIsChatting(true);
     const submittedQuestion = question.trim();
     setAskedQuestion(submittedQuestion);
 
     try {
-      const response = await searchDocument(document.document_id, submittedQuestion);
-      setSearchResponse(response);
+      const response = await chatDocument(document.document_id, submittedQuestion);
+      setChatResponse(response);
       setQuestion('');
-    } catch (searchError) {
+    } catch (chatError) {
       setAskedQuestion('');
       setError(
-        searchError instanceof Error
-          ? searchError.message
+        chatError instanceof Error
+          ? chatError.message
           : 'The question could not be answered.',
       );
     } finally {
-      setIsSearching(false);
+      setIsChatting(false);
     }
   };
 
@@ -184,7 +184,7 @@ export default function FileUpload() {
                   <p>{askedQuestion}</p>
                 </div>
               )}
-              {isSearching && (
+              {isChatting && (
                 <div className="file-upload-typing" role="status">
                   <img src={owlIcon} alt="" className="file-upload-typing-logo" />
                   <span>Thinking through your document</span>
@@ -195,23 +195,24 @@ export default function FileUpload() {
                   </span>
                 </div>
               )}
-              {searchResponse && (
+              {chatResponse && (
                 <div className="file-upload-message file-upload-message-assistant">
                   <span className="file-upload-message-label">Athena</span>
-                  <h3>
-                    {searchResponse.result_count
-                      ? 'Relevant passages'
-                      : 'No relevant passages found'}
-                  </h3>
-                  {searchResponse.results.map((result) => (
-                    <article
-                      className="file-upload-result"
-                      key={`${result.page_number}-${result.chunk_index}`}
-                    >
-                      <p>{result.text}</p>
-                      <small>Page {result.page_number}</small>
-                    </article>
-                  ))}
+                  <p className="file-upload-answer">{chatResponse.answer}</p>
+                  {chatResponse.sources.length > 0 && (
+                    <div className="file-upload-sources">
+                      <h3>Sources</h3>
+                      {chatResponse.sources.map((source) => (
+                        <article
+                          className="file-upload-result"
+                          key={`${source.page_number}-${source.chunk_index}`}
+                        >
+                          <p>{source.text}</p>
+                          <small>Page {source.page_number}</small>
+                        </article>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -278,12 +279,12 @@ export default function FileUpload() {
               <button
                 className="file-upload-submit"
                 type="button"
-                disabled={!question.trim() || isSearching}
-                onClick={handleSearch}
+                disabled={!question.trim() || isChatting}
+                onClick={handleChat}
               >
-                {isSearching ? (
+                {isChatting ? (
                   <>
-                    Searching <span className="file-upload-spinner" aria-hidden="true" />
+                    Thinking <span className="file-upload-spinner" aria-hidden="true" />
                   </>
                 ) : (
                   'Ask question'

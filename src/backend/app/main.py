@@ -4,10 +4,17 @@ from fastapi.middleware.cors import CORSMiddleware
 from uuid import uuid4
 from pydantic import BaseModel, Field
 
+from app.db.vector_store import search_chunks
+from app.services.llm_service import generate_answer
+
 from app.services.pdf_services import extract_pdf_text
 from app.services.chunking_service import chunk_pages
 from app.db.vector_store import store_chunks, search_chunks
 
+
+class ChatRequest(BaseModel):
+    question: str = Field(min_length=1, max_length=2000)
+    top_k: int = Field(default=5, ge=1, le=10)
 
 
 class SearchRequest(BaseModel):
@@ -63,6 +70,62 @@ def search_document(document_id: str, request: SearchRequest):
         "result_count": len(matches),
     }
 
+@app.post("/api/documents/{document_id}/chat")
+def chat_document(document_id: str, request: ChatRequest):
+    question = request.question.strip()
+
+    if not question:
+        raise HTTPException(
+            status_code=422,
+            detail="Question cannot be empty.",
+        )
+
+    matches = search_chunks(
+        document_id=document_id,
+        question=question,
+        top_k=request.top_k,
+    )
+
+    if not matches:
+        return {
+            "document_id": document_id,
+            "question": question,
+            "answer": (
+                "I couldn't find enough information in this document "
+                "to answer that."
+            ),
+            "sources": [],
+        }
+
+    try:
+        answer = generate_answer(
+            question=question,
+            chunks=matches,
+        )
+    except Exception as exc:
+        # Log the actual error in the backend terminal for debugging.
+        print(f"Answer generation failed: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail="Athena couldn't generate an answer. "
+                   "Check that Ollama is running and try again.",
+        ) from exc
+
+    sources = [
+        {
+            "page_number": chunk["page_number"],
+            "chunk_index": chunk["chunk_index"],
+            "text": chunk["text"],
+        }
+        for chunk in matches
+    ]
+
+    return {
+        "document_id": document_id,
+        "question": question,
+        "answer": answer,
+        "sources": sources,
+    }
 
 
 @app.post("/api/documents/upload")

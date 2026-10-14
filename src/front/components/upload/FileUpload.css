@@ -86,6 +86,22 @@
   margin: 0;
 }
 
+.file-upload-answer {
+  white-space: pre-wrap;
+}
+
+.file-upload-sources {
+  display: grid;
+  gap: 7px;
+  margin-top: 6px;
+}
+
+.file-upload-sources h3 {
+  font-family: var(--body);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .file-upload-message-user {
   justify-self: end;
   color: var(--color-bg);
