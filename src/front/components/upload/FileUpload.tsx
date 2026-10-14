@@ -10,9 +10,9 @@ import addIcon from '../../assets/images/add.png';
 import clipIcon from '../../assets/images/clip.png';
 import owlIcon from '../../assets/images/owl_icon_.png';
 import {
-  searchDocument,
+  chatDocument,
   uploadDocument,
-  type SearchResponse,
+  type ChatResponse,
   type UploadResponse,
 } from '../../api';
 
@@ -21,6 +21,8 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 export default function FileUpload() {
   const inputRef = useRef<HTMLInputElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
+  const sourceViewRef = useRef<HTMLDivElement>(null);
+  const pdfUrlRef = useRef<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
@@ -28,19 +30,39 @@ export default function FileUpload() {
   const [document, setDocument] = useState<UploadResponse | null>(null);
   const [question, setQuestion] = useState('');
   const [askedQuestion, setAskedQuestion] = useState('');
-  const [searchResponse, setSearchResponse] = useState<SearchResponse | null>(
+  const [chatResponse, setChatResponse] = useState<ChatResponse | null>(
     null,
   );
-  const [isSearching, setIsSearching] = useState(false);
+  const [isChatting, setIsChatting] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [selectedSourcePage, setSelectedSourcePage] = useState<number | null>(
+    null,
+  );
 
   useEffect(() => {
-    if (searchResponse || isSearching) {
+    return () => {
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+      }
+    };
+  }, []);
+
+  const clearPdfPreview = () => {
+    if (pdfUrlRef.current) {
+      URL.revokeObjectURL(pdfUrlRef.current);
+      pdfUrlRef.current = null;
+    }
+    setPdfUrl(null);
+  };
+
+  useEffect(() => {
+    if (chatResponse || isChatting) {
       conversationRef.current?.scrollTo({
         top: conversationRef.current.scrollHeight,
         behavior: 'smooth',
       });
     }
-  }, [isSearching, searchResponse]);
+  }, [isChatting, chatResponse]);
 
   const selectFile = (file: File | undefined) => {
     setError('');
@@ -50,22 +72,29 @@ export default function FileUpload() {
     }
 
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      clearPdfPreview();
       setSelectedFile(null);
       setError('Please choose a PDF file.');
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
+      clearPdfPreview();
       setSelectedFile(null);
       setError('The PDF must be 10 MB or smaller.');
       return;
     }
 
+    clearPdfPreview();
+    const objectUrl = URL.createObjectURL(file);
+    pdfUrlRef.current = objectUrl;
+    setPdfUrl(objectUrl);
     setSelectedFile(file);
     setDocument(null);
     setQuestion('');
     setAskedQuestion('');
-    setSearchResponse(null);
+    setChatResponse(null);
+    setSelectedSourcePage(null);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -99,30 +128,41 @@ export default function FileUpload() {
     }
   };
 
-  const handleSearch = async () => {
+  const handleChat = async () => {
     if (!document || !question.trim()) {
       return;
     }
 
     setError('');
-    setIsSearching(true);
+    setIsChatting(true);
     const submittedQuestion = question.trim();
     setAskedQuestion(submittedQuestion);
 
     try {
-      const response = await searchDocument(document.document_id, submittedQuestion);
-      setSearchResponse(response);
+      const response = await chatDocument(document.document_id, submittedQuestion);
+      setChatResponse(response);
+      setSelectedSourcePage(response.sources[0]?.page_number ?? null);
       setQuestion('');
-    } catch (searchError) {
+    } catch (chatError) {
       setAskedQuestion('');
       setError(
-        searchError instanceof Error
-          ? searchError.message
+        chatError instanceof Error
+          ? chatError.message
           : 'The question could not be answered.',
       );
     } finally {
-      setIsSearching(false);
+      setIsChatting(false);
     }
+  };
+
+  const handleSourcePageChange = (pageNumber: number) => {
+    setSelectedSourcePage(pageNumber);
+    requestAnimationFrame(() => {
+      sourceViewRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    });
   };
 
   return (
@@ -184,7 +224,7 @@ export default function FileUpload() {
                   <p>{askedQuestion}</p>
                 </div>
               )}
-              {isSearching && (
+              {isChatting && (
                 <div className="file-upload-typing" role="status">
                   <img src={owlIcon} alt="" className="file-upload-typing-logo" />
                   <span>Thinking through your document</span>
@@ -195,23 +235,66 @@ export default function FileUpload() {
                   </span>
                 </div>
               )}
-              {searchResponse && (
+              {chatResponse && (
                 <div className="file-upload-message file-upload-message-assistant">
                   <span className="file-upload-message-label">Athena</span>
-                  <h3>
-                    {searchResponse.result_count
-                      ? 'Relevant passages'
-                      : 'No relevant passages found'}
-                  </h3>
-                  {searchResponse.results.map((result) => (
-                    <article
-                      className="file-upload-result"
-                      key={`${result.page_number}-${result.chunk_index}`}
-                    >
-                      <p>{result.text}</p>
-                      <small>Page {result.page_number}</small>
-                    </article>
-                  ))}
+                  <p className="file-upload-answer">{chatResponse.answer}</p>
+                  {chatResponse.sources.length > 0 && (
+                    <div className="file-upload-sources" aria-label="Document sources">
+                      <h3>Referenced pages</h3>
+                      <div className="file-upload-page-tabs" role="tablist">
+                        {[...new Set(
+                          chatResponse.sources.map((source) => source.page_number),
+                        )].map((pageNumber) => (
+                          <button
+                            className={`file-upload-page-tab${
+                              selectedSourcePage === pageNumber ? ' is-selected' : ''
+                            }`}
+                            key={pageNumber}
+                            type="button"
+                            role="tab"
+                            aria-selected={selectedSourcePage === pageNumber}
+                            onClick={() => handleSourcePageChange(pageNumber)}
+                          >
+                            Page {pageNumber}
+                          </button>
+                        ))}
+                      </div>
+                      {selectedSourcePage && (
+                        <div
+                          ref={sourceViewRef}
+                          className="file-upload-source-view"
+                        >
+                          <div className="file-upload-source-excerpt">
+                            <span className="file-upload-source-label">
+                              From page {selectedSourcePage}
+                            </span>
+                            <p>
+                              {chatResponse.sources.find(
+                                (source) => source.page_number === selectedSourcePage,
+                              )?.text}
+                            </p>
+                          </div>
+                          {pdfUrl && (
+                            <div className="file-upload-page-preview">
+                              <iframe
+                                key={selectedSourcePage}
+                                src={`${pdfUrl}#page=${selectedSourcePage}`}
+                                title={`PDF page ${selectedSourcePage}`}
+                              />
+                              <a
+                                href={`${pdfUrl}#page=${selectedSourcePage}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Open full PDF
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -278,12 +361,12 @@ export default function FileUpload() {
               <button
                 className="file-upload-submit"
                 type="button"
-                disabled={!question.trim() || isSearching}
-                onClick={handleSearch}
+                disabled={!question.trim() || isChatting}
+                onClick={handleChat}
               >
-                {isSearching ? (
+                {isChatting ? (
                   <>
-                    Searching <span className="file-upload-spinner" aria-hidden="true" />
+                    Thinking <span className="file-upload-spinner" aria-hidden="true" />
                   </>
                 ) : (
                   'Ask question'

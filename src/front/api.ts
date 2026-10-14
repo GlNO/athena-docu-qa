@@ -14,18 +14,17 @@ export type UploadResponse = {
   message: string;
 };
 
-export type SearchResult = {
+export type Source = {
   text: string;
   page_number: number;
   chunk_index: number;
-  distance: number;
 };
 
-export type SearchResponse = {
+export type ChatResponse = {
   document_id: string;
   question: string;
-  results: SearchResult[];
-  result_count: number;
+  answer: string;
+  sources: Source[];
 };
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
@@ -57,12 +56,12 @@ export function uploadDocument(file: File): Promise<UploadResponse> {
   });
 }
 
-export function searchDocument(
+export function chatDocument(
   documentId: string,
   question: string,
-): Promise<SearchResponse> {
-  return request<SearchResponse>(
-    `/api/documents/${encodeURIComponent(documentId)}/search`,
+): Promise<ChatResponse> {
+  return request<ChatResponse>(
+    `/api/documents/${encodeURIComponent(documentId)}/chat`,
     {
       method: 'POST',
       headers: {
