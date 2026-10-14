@@ -21,6 +21,8 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024;
 export default function FileUpload() {
   const inputRef = useRef<HTMLInputElement>(null);
   const conversationRef = useRef<HTMLDivElement>(null);
+  const sourceViewRef = useRef<HTMLDivElement>(null);
+  const pdfUrlRef = useRef<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
@@ -32,6 +34,26 @@ export default function FileUpload() {
     null,
   );
   const [isChatting, setIsChatting] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [selectedSourcePage, setSelectedSourcePage] = useState<number | null>(
+    null,
+  );
+
+  useEffect(() => {
+    return () => {
+      if (pdfUrlRef.current) {
+        URL.revokeObjectURL(pdfUrlRef.current);
+      }
+    };
+  }, []);
+
+  const clearPdfPreview = () => {
+    if (pdfUrlRef.current) {
+      URL.revokeObjectURL(pdfUrlRef.current);
+      pdfUrlRef.current = null;
+    }
+    setPdfUrl(null);
+  };
 
   useEffect(() => {
     if (chatResponse || isChatting) {
@@ -50,22 +72,29 @@ export default function FileUpload() {
     }
 
     if (file.type !== 'application/pdf' && !file.name.toLowerCase().endsWith('.pdf')) {
+      clearPdfPreview();
       setSelectedFile(null);
       setError('Please choose a PDF file.');
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
+      clearPdfPreview();
       setSelectedFile(null);
       setError('The PDF must be 10 MB or smaller.');
       return;
     }
 
+    clearPdfPreview();
+    const objectUrl = URL.createObjectURL(file);
+    pdfUrlRef.current = objectUrl;
+    setPdfUrl(objectUrl);
     setSelectedFile(file);
     setDocument(null);
     setQuestion('');
     setAskedQuestion('');
     setChatResponse(null);
+    setSelectedSourcePage(null);
   };
 
   const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +141,7 @@ export default function FileUpload() {
     try {
       const response = await chatDocument(document.document_id, submittedQuestion);
       setChatResponse(response);
+      setSelectedSourcePage(response.sources[0]?.page_number ?? null);
       setQuestion('');
     } catch (chatError) {
       setAskedQuestion('');
@@ -123,6 +153,16 @@ export default function FileUpload() {
     } finally {
       setIsChatting(false);
     }
+  };
+
+  const handleSourcePageChange = (pageNumber: number) => {
+    setSelectedSourcePage(pageNumber);
+    requestAnimationFrame(() => {
+      sourceViewRef.current?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+      });
+    });
   };
 
   return (
@@ -200,17 +240,59 @@ export default function FileUpload() {
                   <span className="file-upload-message-label">Athena</span>
                   <p className="file-upload-answer">{chatResponse.answer}</p>
                   {chatResponse.sources.length > 0 && (
-                    <div className="file-upload-sources">
-                      <h3>Sources</h3>
-                      {chatResponse.sources.map((source) => (
-                        <article
-                          className="file-upload-result"
-                          key={`${source.page_number}-${source.chunk_index}`}
+                    <div className="file-upload-sources" aria-label="Document sources">
+                      <h3>Referenced pages</h3>
+                      <div className="file-upload-page-tabs" role="tablist">
+                        {[...new Set(
+                          chatResponse.sources.map((source) => source.page_number),
+                        )].map((pageNumber) => (
+                          <button
+                            className={`file-upload-page-tab${
+                              selectedSourcePage === pageNumber ? ' is-selected' : ''
+                            }`}
+                            key={pageNumber}
+                            type="button"
+                            role="tab"
+                            aria-selected={selectedSourcePage === pageNumber}
+                            onClick={() => handleSourcePageChange(pageNumber)}
+                          >
+                            Page {pageNumber}
+                          </button>
+                        ))}
+                      </div>
+                      {selectedSourcePage && (
+                        <div
+                          ref={sourceViewRef}
+                          className="file-upload-source-view"
                         >
-                          <p>{source.text}</p>
-                          <small>Page {source.page_number}</small>
-                        </article>
-                      ))}
+                          <div className="file-upload-source-excerpt">
+                            <span className="file-upload-source-label">
+                              From page {selectedSourcePage}
+                            </span>
+                            <p>
+                              {chatResponse.sources.find(
+                                (source) => source.page_number === selectedSourcePage,
+                              )?.text}
+                            </p>
+                          </div>
+                          {pdfUrl && (
+                            <div className="file-upload-page-preview">
+                              <iframe
+                                key={selectedSourcePage}
+                                src={`${pdfUrl}#page=${selectedSourcePage}`}
+                                title={`PDF page ${selectedSourcePage}`}
+                              />
+                              <a
+                                href={`${pdfUrl}#page=${selectedSourcePage}`}
+                                target="_blank"
+                                rel="noreferrer"
+                              >
+                                Open full PDF
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
