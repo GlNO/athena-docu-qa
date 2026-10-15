@@ -1,11 +1,19 @@
 
+import json
+from collections.abc import Iterator
+
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import StreamingResponse
 from uuid import uuid4
 from pydantic import BaseModel, Field
 
 
-from app.services.llm_service import generate_answer, generate_general_answer
+from app.services.llm_service import (
+    generate_answer,
+    generate_general_answer,
+    stream_answer,
+)
 from app.services.pdf_services import extract_pdf_text
 from app.services.chunking_service import chunk_pages
 from app.db.vector_store import store_chunks, search_chunks
@@ -151,6 +159,95 @@ def chat_without_document(request: ChatRequest):
         "answer": answer,
         "sources": [],
     }
+
+
+def _sse_event(event: str, payload: dict) -> str:
+    return f"event: {event}\ndata: {json.dumps(payload)}\n\n"
+
+
+def _stream_chat_response(
+    question: str,
+    document_id: str | None,
+    chunks: list[dict] | None,
+) -> Iterator[str]:
+    sources = [
+        {
+            "page_number": chunk["page_number"],
+            "chunk_index": chunk["chunk_index"],
+            "text": chunk["text"],
+        }
+        for chunk in chunks or []
+    ]
+    yield _sse_event(
+        "metadata",
+        {
+            "document_id": document_id,
+            "question": question,
+            "sources": sources,
+        },
+    )
+
+    if chunks is not None and not chunks:
+        yield _sse_event(
+            "chunk",
+            {
+                "content": (
+                    "I couldn't find enough information in this document "
+                    "to answer that."
+                ),
+            },
+        )
+    else:
+        try:
+            for content in stream_answer(question, chunks):
+                yield _sse_event("chunk", {"content": content})
+        except Exception as exc:
+            print(f"Streaming answer generation failed: {exc}")
+            yield _sse_event(
+                "error",
+                {
+                    "detail": (
+                        "Athena couldn't generate an answer. "
+                        "Check that Ollama is running and try again."
+                    ),
+                },
+            )
+            return
+
+    yield _sse_event("done", {})
+
+
+@app.post("/api/documents/{document_id}/chat/stream")
+def stream_document_chat(document_id: str, request: ChatRequest):
+    question = request.question.strip()
+
+    if not question:
+        raise HTTPException(status_code=422, detail="Question cannot be empty.")
+
+    matches = search_chunks(
+        document_id=document_id,
+        question=question,
+        top_k=request.top_k,
+    )
+    return StreamingResponse(
+        _stream_chat_response(question, document_id, matches),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+
+
+@app.post("/api/chat/stream")
+def stream_general_chat(request: ChatRequest):
+    question = request.question.strip()
+
+    if not question:
+        raise HTTPException(status_code=422, detail="Question cannot be empty.")
+
+    return StreamingResponse(
+        _stream_chat_response(question, None, None),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
 
 
 @app.post("/api/documents/upload")

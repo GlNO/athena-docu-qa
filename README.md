@@ -11,6 +11,7 @@ to ask questions grounded in their contents.
 - Start a conversation without uploading a document
 - Ask questions about document contents
 - Generate context-aware answers using an AI model
+- Stream answers as Athena generates them
 - Get answers grounded in the uploaded document
 
 ## Tech Stack

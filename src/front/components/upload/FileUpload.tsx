@@ -10,8 +10,8 @@ import addIcon from '../../assets/images/add.png';
 import clipIcon from '../../assets/images/clip.png';
 import owlIcon from '../../assets/images/owl_icon_.png';
 import {
-  chatWithAthena,
-  chatDocument,
+  streamChatWithAthena,
+  streamChatDocument,
   uploadDocument,
   type ChatResponse,
   type UploadResponse,
@@ -141,8 +141,26 @@ export default function FileUpload() {
 
     try {
       const response = document
-        ? await chatDocument(document.document_id, submittedQuestion)
-        : await chatWithAthena(submittedQuestion);
+        ? await streamChatDocument(
+            document.document_id,
+            submittedQuestion,
+            (answer) => {
+              setChatResponse({
+                document_id: document.document_id,
+                question: submittedQuestion,
+                answer,
+                sources: [],
+              });
+            },
+          )
+        : await streamChatWithAthena(submittedQuestion, (answer) => {
+            setChatResponse({
+              document_id: null,
+              question: submittedQuestion,
+              answer,
+              sources: [],
+            });
+          });
       setChatResponse(response);
       setSelectedSourcePage(response.sources[0]?.page_number ?? null);
       setQuestion('');
