@@ -21,7 +21,7 @@ export type Source = {
 };
 
 export type ChatResponse = {
-  document_id: string;
+  document_id: string | null;
   question: string;
   answer: string;
   sources: Source[];
@@ -70,4 +70,14 @@ export function chatDocument(
       body: JSON.stringify({ question }),
     },
   );
+}
+
+export function chatWithAthena(question: string): Promise<ChatResponse> {
+  return request<ChatResponse>('/api/chat', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ question }),
+  });
 }

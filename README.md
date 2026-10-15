@@ -2,11 +2,13 @@
 
 **An AI-powered Document Q&A application.**
 
-Athena lets users upload PDF documents and ask questions about their contents. It uses AI to generate answers grounded in the information found in the provided document.
+Athena lets users chat with an AI assistant and optionally upload PDF documents
+to ask questions grounded in their contents.
 
 ## Features
 
 - Upload text-based PDF documents
+- Start a conversation without uploading a document
 - Ask questions about document contents
 - Generate context-aware answers using an AI model
 - Get answers grounded in the uploaded document

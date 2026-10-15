@@ -5,7 +5,7 @@ from uuid import uuid4
 from pydantic import BaseModel, Field
 
 
-from app.services.llm_service import generate_answer
+from app.services.llm_service import generate_answer, generate_general_answer
 from app.services.pdf_services import extract_pdf_text
 from app.services.chunking_service import chunk_pages
 from app.db.vector_store import store_chunks, search_chunks
@@ -122,6 +122,34 @@ def chat_document(document_id: str, request: ChatRequest):
         "question": question,
         "answer": answer,
         "sources": sources,
+    }
+
+
+@app.post("/api/chat")
+def chat_without_document(request: ChatRequest):
+    question = request.question.strip()
+
+    if not question:
+        raise HTTPException(
+            status_code=422,
+            detail="Question cannot be empty.",
+        )
+
+    try:
+        answer = generate_general_answer(question)
+    except Exception as exc:
+        print(f"Answer generation failed: {exc}")
+        raise HTTPException(
+            status_code=502,
+            detail="Athena couldn't generate an answer. "
+                   "Check that Ollama is running and try again.",
+        ) from exc
+
+    return {
+        "document_id": None,
+        "question": question,
+        "answer": answer,
+        "sources": [],
     }
 
 

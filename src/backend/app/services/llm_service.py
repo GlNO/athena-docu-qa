@@ -23,29 +23,31 @@ RULES:
 
 """
 
+GENERAL_SYS_PROMPT = """
+You are Athena, a helpful conversational assistant.
 
-def generate_answer(question: str, chunks: list[dict]) -> str:
-    if not chunks:
-        return (
-            "I couldn't find enough information in this document to answer that."
-        )
+RULES:
+1. Answer the user's question clearly and directly.
+2. Do not claim to have access to a document unless the user supplied one.
+3. If the question requires information you do not have, say so clearly rather
+   than inventing facts.
+4. Keep answers concise and directly relevant to the question.
+"""
 
-    excerpts = "\n\n".join(
-        f"[Page {chunk['page_number']}]\n{chunk['text']}"
-        for chunk in chunks
-    )
+def _generate_answer(
+    question: str,
+    system_prompt: str,
+    excerpts: str = "",
+) -> str:
+    prompt = f"QUESTION:\n{question}"
+    if excerpts:
+        prompt = f"DOCUMENT EXCERPTS:\n{excerpts}\n\n{prompt}"
 
     payload = {
         "model": MODEL_NAME,
         "messages": [
-            {"role": "system", "content": SYS_PROMPT},
-            {
-                "role": "user",
-                "content": (
-                    f"DOCUMENT EXCERPTS:\n{excerpts}\n\n"
-                    f"QUESTION:\n{question}"
-                ),
-            },
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt},
         ],
         "stream": False,
         "options": {
@@ -79,3 +81,20 @@ def generate_answer(question: str, chunks: list[dict]) -> str:
         raise RuntimeError("Ollama returned an empty answer.")
 
     return answer.strip()
+
+
+def generate_answer(question: str, chunks: list[dict]) -> str:
+    if not chunks:
+        return (
+            "I couldn't find enough information in this document to answer that."
+        )
+
+    excerpts = "\n\n".join(
+        f"[Page {chunk['page_number']}]\n{chunk['text']}"
+        for chunk in chunks
+    )
+    return _generate_answer(question, SYS_PROMPT, excerpts)
+
+
+def generate_general_answer(question: str) -> str:
+    return _generate_answer(question, GENERAL_SYS_PROMPT)
