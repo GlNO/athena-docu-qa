@@ -10,9 +10,9 @@ export default function About() {
 					<p className="about-eyebrow">About Athena</p>
 					<h2 id="about-title">An AI-powered Document Q&amp;A application.</h2>
 					<p className="about-description">
-						Athena lets you upload text-based PDF documents and ask questions
-						about their contents. It uses AI to generate context-aware answers
-						grounded in the information found in your document.
+						Athena lets you start a conversation right away or upload a
+						text-based PDF to ask questions about its contents. Document
+						answers are grounded in the information found in your document.
 					</p>
 				</div>
 
@@ -21,6 +21,7 @@ export default function About() {
 						<h3>What you can do</h3>
 						<ul>
 							<li>Upload text-based PDF documents</li>
+							<li>Start a conversation without uploading a document</li>
 							<li>Ask questions about document contents</li>
 							<li>Generate context-aware answers using an AI model</li>
 							<li>Get answers grounded in the uploaded document</li>

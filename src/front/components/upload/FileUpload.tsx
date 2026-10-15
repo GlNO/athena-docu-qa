@@ -10,7 +10,8 @@ import addIcon from '../../assets/images/add.png';
 import clipIcon from '../../assets/images/clip.png';
 import owlIcon from '../../assets/images/owl_icon_.png';
 import {
-  chatDocument,
+  streamChatWithAthena,
+  streamChatDocument,
   uploadDocument,
   type ChatResponse,
   type UploadResponse,
@@ -129,7 +130,7 @@ export default function FileUpload() {
   };
 
   const handleChat = async () => {
-    if (!document || !question.trim()) {
+    if (!question.trim()) {
       return;
     }
 
@@ -139,7 +140,27 @@ export default function FileUpload() {
     setAskedQuestion(submittedQuestion);
 
     try {
-      const response = await chatDocument(document.document_id, submittedQuestion);
+      const response = document
+        ? await streamChatDocument(
+            document.document_id,
+            submittedQuestion,
+            (answer) => {
+              setChatResponse({
+                document_id: document.document_id,
+                question: submittedQuestion,
+                answer,
+                sources: [],
+              });
+            },
+          )
+        : await streamChatWithAthena(submittedQuestion, (answer) => {
+            setChatResponse({
+              document_id: null,
+              question: submittedQuestion,
+              answer,
+              sources: [],
+            });
+          });
       setChatResponse(response);
       setSelectedSourcePage(response.sources[0]?.page_number ?? null);
       setQuestion('');
@@ -186,11 +207,11 @@ export default function FileUpload() {
           }}
           onDrop={handleDrop}
         >
-          {!document && !isUploading && (
+          {!document && !askedQuestion && !isChatting && (
             <div className="file-upload-prompt">
               <img src={owlIcon} alt="" className="file-upload-logo" />
               <h2 id="file-upload-title">What would you like to know?</h2>
-              <p>Attach a PDF to get the conversation started.</p>
+              <p>Ask Athena anything, or attach a PDF for document-grounded answers.</p>
             </div>
           )}
 
@@ -209,15 +230,17 @@ export default function FileUpload() {
             </div>
           )}
 
-          {document && (
+          {(document || askedQuestion || isChatting) && (
             <div
               ref={conversationRef}
               className="file-upload-conversation"
               aria-live="polite"
             >
-              <p className="file-upload-success" role="status">
-                {document.message}
-              </p>
+              {document && (
+                <p className="file-upload-success" role="status">
+                  {document.message}
+                </p>
+              )}
               {askedQuestion && (
                 <div className="file-upload-message file-upload-message-user">
                   <span className="file-upload-message-label">You</span>
@@ -337,7 +360,7 @@ export default function FileUpload() {
               placeholder="Ask Athena a question..."
               rows={1}
               maxLength={2000}
-              disabled={!document}
+              disabled={isUploading || isChatting}
             />
 
             {selectedFile && !document && (
@@ -357,22 +380,20 @@ export default function FileUpload() {
               </button>
             )}
 
-            {document && (
-              <button
-                className="file-upload-submit"
-                type="button"
-                disabled={!question.trim() || isChatting}
-                onClick={handleChat}
-              >
-                {isChatting ? (
-                  <>
-                    Thinking <span className="file-upload-spinner" aria-hidden="true" />
-                  </>
-                ) : (
-                  'Ask question'
-                )}
-              </button>
-            )}
+            <button
+              className="file-upload-submit"
+              type="button"
+              disabled={!question.trim() || isChatting || isUploading}
+              onClick={handleChat}
+            >
+              {isChatting ? (
+                <>
+                  Thinking <span className="file-upload-spinner" aria-hidden="true" />
+                </>
+              ) : (
+                document ? 'Ask question' : 'Ask Athena'
+              )}
+            </button>
           </div>
         </div>
 
