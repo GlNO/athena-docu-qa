@@ -4,9 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from uuid import uuid4
 from pydantic import BaseModel, Field
 
-from app.db.vector_store import search_chunks
-from app.services.llm_service import generate_answer
 
+from app.services.llm_service import generate_answer
 from app.services.pdf_services import extract_pdf_text
 from app.services.chunking_service import chunk_pages
 from app.db.vector_store import store_chunks, search_chunks
@@ -20,8 +19,6 @@ class ChatRequest(BaseModel):
 class SearchRequest(BaseModel):
     question: str = Field(min_length=1, max_length=2000)
     top_k: int = Field(default=5, ge=1, le=10)
-
-
 
 
 app = FastAPI(
