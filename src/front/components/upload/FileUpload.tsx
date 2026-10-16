@@ -102,10 +102,20 @@ export default function FileUpload() {
     selectFile(event.target.files?.[0]);
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+  const handleDrop = (event: DragEvent<HTMLElement>) => {
     event.preventDefault();
     setIsDragging(false);
     selectFile(event.dataTransfer.files[0]);
+  };
+
+  const clearSelectedFile = () => {
+    clearPdfPreview();
+    setSelectedFile(null);
+    setDocument(null);
+    setError('');
+    if (inputRef.current) {
+      inputRef.current.value = '';
+    }
   };
 
   const handleUpload = async () => {
@@ -189,9 +199,15 @@ export default function FileUpload() {
   return (
   <section className="file-upload" id="upload-pdf" aria-labelledby="file-upload-title">
     <div className="file-upload-content">
-      <div className="file-upload-eyebrow" aria-label="Athena, knowledge within reach">
-        <strong>Athena</strong>
-        <span>Knowledge, within reach.</span>
+      <div className="file-upload-header">
+        <div>
+          <p className="file-upload-kicker">Document workspace</p>
+          <h1 id="file-upload-title">Make sense of your documents.</h1>
+          <p className="file-upload-intro">
+            Ask a question, or add a PDF to get answers grounded in the pages that matter.
+          </p>
+        </div>
+       
       </div>
       <div
         className={`file-upload-dropzone${isDragging ? ' is-dragging' : ''}`}
@@ -210,7 +226,7 @@ export default function FileUpload() {
           {!document && !askedQuestion && !isChatting && (
             <div className="file-upload-prompt">
               <img src={owlIcon} alt="" className="file-upload-logo" />
-              <h2 id="file-upload-title">What would you like to know?</h2>
+              <h2>What would you like to know?</h2>
               <p>Ask Athena anything, or attach a PDF for document-grounded answers.</p>
             </div>
           )}
@@ -243,7 +259,6 @@ export default function FileUpload() {
               )}
               {askedQuestion && (
                 <div className="file-upload-message file-upload-message-user">
-                  <span className="file-upload-message-label">You</span>
                   <p>{askedQuestion}</p>
                 </div>
               )}
@@ -331,24 +346,60 @@ export default function FileUpload() {
             onChange={handleFileChange}
           />
           <div className="file-upload-composer">
-            <div className="file-upload-attachment-row">
+            {!selectedFile && !document ? (
               <button
-                className="file-upload-attach"
+                className={`file-upload-upload-area${isDragging ? ' is-dragging' : ''}`}
                 type="button"
                 onClick={() => inputRef.current?.click()}
+                onDragEnter={(event) => {
+                  event.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragOver={(event) => event.preventDefault()}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
               >
-                <img src={clipIcon} alt="" />
-                <span>{selectedFile?.name ?? 'Attach a PDF'}</span>
+                <span className="file-upload-upload-icon">
+                  <img src={clipIcon} alt="" />
+                </span>
+                <span className="file-upload-upload-copy">
+                  <strong>Add a PDF</strong>
+                  <span>Drop it here or browse your files</span>
+                </span>
+                <span className="file-upload-upload-meta">PDF · up to 10 MB</span>
               </button>
-              <button
-                className="file-upload-add"
-                type="button"
-                aria-label="Choose a PDF file"
-                onClick={() => inputRef.current?.click()}
-              >
-                <img src={addIcon} alt="" />
-              </button>
-            </div>
+            ) : (
+              <div className="file-upload-attachment-row">
+                <div className="file-upload-file">
+                  <span className="file-upload-file-icon">
+                    <img src={clipIcon} alt="" />
+                  </span>
+                  <span className="file-upload-file-copy">
+                    <strong>{selectedFile?.name ?? 'Document ready'}</strong>
+                    <span>{document ? 'Ready for questions' : 'PDF selected'}</span>
+                  </span>
+                </div>
+                {!document && (
+                  <button
+                    className="file-upload-add"
+                    type="button"
+                    aria-label="Replace selected PDF"
+                    onClick={() => inputRef.current?.click()}
+                  >
+                    <img src={addIcon} alt="" />
+                  </button>
+                )}
+                {selectedFile && !document && (
+                  <button
+                    className="file-upload-remove"
+                    type="button"
+                    onClick={clearSelectedFile}
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
+            )}
 
             <div className="file-upload-divider" />
 
@@ -394,6 +445,7 @@ export default function FileUpload() {
                 document ? 'Ask question' : 'Ask Athena'
               )}
             </button>
+            <span className="file-upload-hint">PDFs up to 10 MB · Answers stay grounded in your source</span>
           </div>
         </div>
 

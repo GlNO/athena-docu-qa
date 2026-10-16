@@ -18,37 +18,22 @@
 
 
 :root {
-
-
-
-  /* COLOR SCHEME */
-  --color-bg:  #FFFFFA;
-
-
-  --color-primary: #DABC8E; 
-  --color-secondary: #7B6750;
-  
-  --text-primary: #070300;
-  --text-bg: #DABC8E; 
-
-  --color-border: #564838;
-
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
-
-
-
-  /*  TYPOGRAPHY */
+  --color-bg: #fbfaf7;
+  --color-surface: #fffefa;
+  --color-surface-muted: #f3eee5;
+  --color-primary: #dabc8e;
+  --color-secondary: #6f5a43;
+  --text-primary: #201b16;
+  --text-muted: #847667;
+  --text-bg: #dabc8e;
+  --color-border: #b9aa95;
+  --shadow: 0 18px 50px rgba(54, 42, 28, 0.09);
   --heading: 'Tienne', serif;
   --body: 'IBM Plex Sans', sans-serif;
-  
-
-
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
-  color: var(--text);
-  background: var(--bg);
+  font: 16px/145% var(--body);
+  letter-spacing: 0.01em;
+  color: var(--text-primary);
+  background: var(--color-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -75,6 +60,11 @@ body {
   overflow-wrap: anywhere;
   overflow-x: hidden;
   background: var(--color-bg);
+}
+
+::selection {
+  color: var(--text-primary);
+  background: var(--color-primary);
 }
 
 h1,
@@ -121,4 +111,3 @@ p {
   border-radius: 4px;
   transition: background-color 0.3s ease;
 }
-
