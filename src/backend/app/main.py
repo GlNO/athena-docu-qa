@@ -62,17 +62,28 @@ def health_check():
 
 @app.post("/api/documents/{document_id}/search")
 def search_document(document_id: str, request: SearchRequest):
+
     matches = search_chunks(
         document_id=document_id,
         question=request.question,
         top_k=request.top_k,
+
+        
     )
+        
+    
+
+
+        
 
     return {
         "document_id": document_id,
         "question": request.question,
         "results": matches,
         "result_count": len(matches),
+
+        
+
     }
 
 @app.post("/api/documents/{document_id}/chat")
@@ -90,6 +101,12 @@ def chat_document(document_id: str, request: ChatRequest):
         question=question,
         top_k=request.top_k,
     )
+
+    print("\n--- RETRIEVED CHUNKS (chat_document) ---")
+    print(matches)
+    print("--- END RETRIEVED CHUNKS ---\n")
+
+   
 
     if not matches:
         return {
@@ -229,6 +246,11 @@ def stream_document_chat(document_id: str, request: ChatRequest):
         question=question,
         top_k=request.top_k,
     )
+
+    print("\n--- RETRIEVED CHUNKS (chat_document) ---")
+    print(matches)
+    print("--- END RETRIEVED CHUNKS ---\n")
+    
     return StreamingResponse(
         _stream_chat_response(question, document_id, matches),
         media_type="text/event-stream",
