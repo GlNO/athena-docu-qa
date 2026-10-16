@@ -7,6 +7,7 @@ Athena is an AI-powered Document Q&A application that allows users to upload PDF
 - Keep changes focused and avoid unnecessary refactoring.
 - Do not introduce new dependencies without a clear reason.
 - Never hardcode API keys, credentials, or other secrets.
+- Do not put anything on the README.md
 
 ## Document Q&A Behavior
 - Answers must be grounded in the supplied document excerpts.

@@ -3,9 +3,9 @@
   position: relative;
   display: flex;
   align-items: center;
-  min-height: min(720px, calc(100vh - 80px));
+  min-height: min(680px, calc(100vh - 74px));
   overflow: hidden;
-  padding: 96px 32px;
+  padding: 88px 32px;
   text-align: left;
 }
 
@@ -39,7 +39,7 @@
   margin: 0 0 16px;
   font-family: var(--heading);
   color: var(--color-text);
-  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  font-size: clamp(2.7rem, 6vw, 5.2rem);
   line-height: 1.05;
   font-weight: 400;
 }
@@ -57,17 +57,50 @@
       font-weight: 900;
       font-style: italic;
       font-synthesis: style;
-      font-size: 2rem;
+      font-size: clamp(1.35rem, 2.5vw, 2rem);
       line-height: 1.5;
 }
 
 .hero-description {
       color: var(--text-primary);
       font-family: var(--body);
-      font-size: 1.5rem;
+      max-width: 560px;
+      font-size: 1.2rem;
       font-weight: 400;
 
       margin: 0 0 12px;
+}
+
+.hero-section .btn {
+  margin-top: 18px;
+  padding: 0;
+  background: transparent;
+}
+
+.hero-button {
+  display: inline-flex;
+  align-items: center;
+  padding: 13px 18px;
+  border-radius: 8px;
+  color: var(--color-bg);
+  background: var(--color-secondary);
+  font-family: var(--body);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  transition: transform 180ms ease, background-color 180ms ease;
+}
+
+.hero-button:hover,
+.hero-button:focus-visible {
+  background: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.hero-button:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 4px;
 }
 
 @media (max-width: 768px) {
@@ -88,5 +121,15 @@
     width: min(84vw, 420px);
     max-height: none;
     margin: 32px auto 0;
+  }
+
+  .hero-title {
+    font-size: clamp(2.6rem, 12vw, 4.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-button {
+    transition: none;
   }
 }
