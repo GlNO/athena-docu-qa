@@ -19,6 +19,8 @@ The application is intended for learning and experimentation with AI-powered doc
 <h2> Project Demo </h2>
 ![App Demo](https://raw.githubusercontent.com/GlNO/athena-docu-qa/main/src/front/assets/Athena_Demo.gif)
 
+<img width="800" height="450" alt="Athena_Demo" src="https://github.com/user-attachments/assets/9c2c72ec-e542-44bf-af2c-b4b233e77fda" />
+
 ---
 <h3> Project Images </h3>
 <img width="90%" height="90%" alt="image" src="https://github.com/user-attachments/assets/2b119a83-547b-45b9-a842-faa93aafd311" />
