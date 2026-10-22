@@ -3,6 +3,9 @@
 ## An AI-powered Document Q&A application.
 A Document Question-Answering System where users upload a PDF, ask questions about its contents, and receive answers grounded in the document rather than the model's general knowledge.
 
+<img width="800" height="450" alt="Athena_Demo" src="https://github.com/user-attachments/assets/9c2c72ec-e542-44bf-af2c-b4b233e77fda" />
+
+
 ### Project Purpose
 Athena is a personal project developed to explore AI-powered applications, document processing, and retrieval-augmented generation (RAG). Inspired by an online course that introduced me to the various applications of artificial intelligence, I decided to build Athena as a hands-on learning experience. 
 > Through this project, I aim to deepen my understanding of prompt engineering, document retrieval, and local AI deployment. By combining these concepts altogether; I can explore how AI models process information, retrieve relevant context, and generate answers grounded in provided documents.
@@ -14,12 +17,6 @@ Athena is a <b> locally run project and is not currently deployed as a publicly 
 Running it requires setting up the frontend, backend, and local AI model through Ollama.
 The application is intended for learning and experimentation with AI-powered document processing, prompt engineering, and retrieval-augmented generation (RAG).
 
-
-
-<h2> Project Demo </h2>
-
-
-<img width="800" height="450" alt="Athena_Demo" src="https://github.com/user-attachments/assets/9c2c72ec-e542-44bf-af2c-b4b233e77fda" />
 
 ---
 <h3> Project Images </h3>
