@@ -1,6 +1,14 @@
-# Athena | Document Q&A
 
-## An AI-powered Document Q&A application.
+
+<div align="center"> 
+
+<img width="850" height="250" alt="athena_app" src="https://github.com/user-attachments/assets/5bdf361d-7b3d-4f31-9d7c-781db4475b6c" />
+
+
+
+</div>
+
+<h3> An AI-powered Document Q&A application. </h3>
 A Document Question-Answering System where users upload a PDF, ask questions about its contents, and receive answers grounded in the document rather than the model's general knowledge.
 
 <img width="800" height="450" alt="Athena_Demo" src="https://github.com/user-attachments/assets/9c2c72ec-e542-44bf-af2c-b4b233e77fda" />
