@@ -18,8 +18,9 @@ function App() {
      <main>
       <AppNavbar/>
       <Hero/>
-      <About/>
       <FileUpload/>
+      <About/>
+      
      </main>
      <AppFooter/>
     </>
